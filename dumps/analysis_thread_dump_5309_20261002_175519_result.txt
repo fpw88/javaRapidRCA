@@ -1,0 +1,32 @@
+### JVM 线程堆栈维度分析发现
+
+**1. 线程状态分布**
+- TIMED_WAITING：108 个
+- 无状态：21 个
+- RUNNABLE：19 个
+- WAITING：2 个
+- 线程总数：150
+
+**2. 可疑栈顶与阻塞点**
+- **可疑栈顶-1**：共 92 个线程（均为 `http-nio-*-exec-*`，状态 TIMED_WAITING），占线程总数 61.3%，是唯一达到根因分析阈值的高频栈顶。
+- **共同阻塞点**：所有 92 个线程均阻塞在 Redis 连接池借用阶段，具体位置为：
+  - `org.apache.commons.pool2.impl.LinkedBlockingDeque.pollFirst`（栈帧4）
+  - 上层调用链一致经过 `GenericObjectPool.borrowObject` → `ConnectionPoolSupport$1.borrowObject` → `LettucePoolingConnectionProvider.getConnection` → `LettuceConnection.doGetAsyncDedicatedConnection` → `LettuceConnection.getAsyncConnection` → `LettuceConnection.invoke`
+- **直接等待原语**：`jdk.internal.misc.Unsafe.park` + `LockSupport.parkNanos` + `AbstractQueuedSynchronizer$ConditionObject.awaitNanos`，表明是在带超时的条件队列上等待可用连接对象。
+
+**3. 共同调用链与业务入口聚合**
+读取的 3 个栈明细（第1/2/3个）显示，虽然最终触发的 Redis 命令不同，但阻塞前的调用路径完全一致，差异仅在业务 Controller 方法与对应的 Redis 操作：
+- 明细1（栈深78）：`StringController.incr` → `DefaultValueOperations.increment` → `LettuceStringCommands.incrBy`
+- 明细2（栈深79）：`StringController.get` → `DefaultValueOperations.get` → `LettuceStringCommands.get`
+- 明细3（栈深78）：`StringController.set` → `DefaultValueOperations.set` → `LettuceStringCommands.set`
+
+三条路径在 `LettuceConnection.invoke` 之前汇合到相同的连接获取链路，证实 92 个线程并非卡在某个特定 Redis 命令的执行或响应等待上，而是统一卡在从 Lettuce 连接池获取专用连接的环节。
+
+**4. 关键证据索引**
+- 依据栈顶序号：可疑堆栈的共同栈顶-1（92 线程）
+- 关键帧行：
+  - 栈帧4：`org.apache.commons.pool2.impl.LinkedBlockingDeque.pollFirst`
+  - 栈帧5-6：`org.apache.commons.pool2.impl.GenericObjectPool.borrowObject`
+  - 栈帧9：`org.springframework.data.redis.connection.lettuce.LettucePoolingConnectionProvider.getConnection`
+  - 栈帧11-14：`LettuceConnection.doGetAsyncDedicatedConnection` / `getOrCreateDedicatedConnection` / `getAsyncDedicatedConnection` / `getAsyncConnection`
+- 已读明细文件：`analysis_thread_dump_5309_20261002_175519_stacktop_1.txt`（3 个样本全部读完，未截断）

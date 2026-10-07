@@ -1,0 +1,4 @@
+langchain>=1.2,<1.3
+langchain-openai
+paramiko
+python-dotenv

@@ -1,0 +1,22 @@
+线程堆栈分析摘要：
+   1、展示前 5 个高频栈顶。分析方式：取栈顶前 10 行聚合；栈深小于 20 的不参与聚合；线程数少于 10 的栈顶不参与根因分析。
+   2、线程总数: 150
+   3、线程状态分布: TIMED_WAITING x 108个, 无状态 x 21个, RUNNABLE x 19个, WAITING x 2个
+
+
+
+可疑堆栈的共同栈顶-1: 92 个线程对应该栈顶。 线程状态分布：TIMED_WAITING x 92个。最大栈深 79 。最小栈深 78
+  线程名: http-nio-*-exec-* x 92个
+   1. jdk.internal.misc.Unsafe.park(Native Method)
+   2. java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java)
+   3. java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(AbstractQueuedSynchronizer.java)
+   4. org.apache.commons.pool2.impl.LinkedBlockingDeque.pollFirst(LinkedBlockingDeque.java)
+   5. org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java)
+   6. org.apache.commons.pool2.impl.GenericObjectPool.borrowObject(GenericObjectPool.java)
+   7. io.lettuce.core.support.ConnectionPoolSupport$1.borrowObject(ConnectionPoolSupport.java)
+   8. io.lettuce.core.support.ConnectionPoolSupport$1.borrowObject(ConnectionPoolSupport.java)
+   9. org.springframework.data.redis.connection.lettuce.LettucePoolingConnectionProvider.getConnection(LettucePoolingConnectio
+  10. org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory$ExceptionTranslatingConnectionProvider.getCon
+  ...(已省略后续帧)
+
+  该栈顶对应的 3 个堆栈明细见: E:\agentProjects\rapidRCA\dumps\analysis_thread_dump_5309_20261002_175519_stacktop_1.txt

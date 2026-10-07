@@ -1,0 +1,12 @@
+%Cpu(s): 32.3 us, 64.5 sy,  0.0 ni,  0.0 id,  0.0 wa,  3.2 hi,  0.0 si,  0.0 st
+%Cpu(s): 53.8 us, 42.3 sy,  0.0 ni,  1.8 id,  0.1 wa,  1.6 hi,  0.5 si,  0.0 st
+%Cpu(s): 57.7 us, 39.9 sy,  0.0 ni,  0.0 id,  0.4 wa,  1.7 hi,  0.3 si,  0.0 st
+%Cpu(s): 59.0 us, 39.0 sy,  0.0 ni,  0.0 id,  0.1 wa,  1.6 hi,  0.2 si,  0.0 st
+%Cpu(s): 60.0 us, 37.9 sy,  0.0 ni,  0.0 id,  0.1 wa,  1.7 hi,  0.3 si,  0.0 st
+%Cpu(s): 62.3 us, 35.4 sy,  0.0 ni,  0.0 id,  0.5 wa,  1.5 hi,  0.3 si,  0.0 st
+%Cpu(s): 62.3 us, 35.4 sy,  0.0 ni,  0.0 id,  0.3 wa,  1.6 hi,  0.3 si,  0.0 st
+%Cpu(s): 64.2 us, 33.2 sy,  0.0 ni,  0.0 id,  0.6 wa,  1.7 hi,  0.2 si,  0.0 st
+%Cpu(s): 64.4 us, 33.6 sy,  0.0 ni,  0.0 id,  0.1 wa,  1.6 hi,  0.3 si,  0.0 st
+%Cpu(s): 71.2 us, 27.2 sy,  0.0 ni,  0.0 id,  0.0 wa,  1.4 hi,  0.2 si,  0.0 st
+%Cpu(s): 71.5 us, 26.7 sy,  0.0 ni,  0.1 id,  0.2 wa,  1.4 hi,  0.1 si,  0.0 st
+%Cpu(s): 61.2 us, 33.1 sy,  0.0 ni,  0.0 id,  3.9 wa,  1.5 hi,  0.3 si,  0.0 st

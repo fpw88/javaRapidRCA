@@ -1,0 +1,20 @@
+维度结论[jvm线程堆栈分析]: 
+
+**一、线程阻塞现象与调用链定位**
+本次线程堆栈共 150 个线程，其中 92 个 HTTP 工作线程（`http-nio-*-exec-*`）处于 `TIMED_WAITING` 状态，占比高达 61.3%，构成绝对主导的可疑阻塞群体。这 92 个线程的阻塞点完全一致，均停滞在 Redis 连接池借用阶段：底层停留在 `LinkedBlockingDeque.pollFirst` → `GenericObjectPool.borrowObject`，上层经过 Lettuce 的 `ConnectionPoolSupport$1.borrowObject` → `LettucePoolingConnectionProvider.getConnection` → `LettuceConnection.doGetAsyncDedicatedConnection` / `getAsyncConnection`。这表明所有被阻塞的请求都在等待从 Lettuce 连接池中获取可用的 Redis 专用连接。
+
+**二、业务入口与阻塞无关性验证**
+通过读取 3 个典型堆栈明细发现，虽然最终触发的业务操作不同（分别对应 `StringController.incr`、`StringController.get`、`StringController.set`），但它们在进入 `LettuceConnection.invoke` 执行具体命令之前，全部汇合到了相同的连接获取链路。这证实了 92 个线程并非卡在某个特定 Redis 命令的执行或网络响应上，而是统一卡在“获取连接”这一前置环节。
+
+**三、结合外部依赖子智能体结论的根因判断**
+根据外部依赖（Redis）子智能体的排查结论，已明确排除慢日志（0条慢查询）、网络延时异常（avg=2.494ms < 10ms）以及 CPU 持续高负载等常见因素；但发现了一个关键线索：**Redis 固有延时存在偶发尖刺，最大值达到 30.501ms（超过 P1 阈值 ≥10ms），且 worst 值偏离均值达 462 倍**。
+
+综合以上信息得出以下根因逻辑链：
+1. **表现层**：JVM 中 92 个 Tomcat 线程在 Commons Pool2 队列中排队等待 Lettuce 连接对象。
+2. **直接原因**：连接池中的可用连接被耗尽，新的借取请求只能超时等待（`parkNanos`）。
+3. **根本原因**：由于 Redis 服务端存在周期性的固有延时尖刺（最大 30.501ms，可能与后台任务如 RDB/AOF 重写、内存碎片整理或瞬时突发流量排队有关），导致部分正在使用连接的请求耗时被异常拉长，连接归还速度远低于新请求的借取速度。这种“借出快、归还慢”的剪刀差迅速耗尽了连接池容量，从而引发了大面积的线程阻塞。
+
+**四、最终结论**
+JVM 线程堆栈所呈现的 92 个线程阻塞于 `borrowObject` 是问题的表象，其根本原因在于 Redis 服务端存在的周期性固有延时尖刺（max=30.501ms），导致 Lettuce 连接池连接周转率骤降并最终枯竭。建议进一步排查该固有延时尖刺发生的时间点是否与 Redis 后台任务重合，并监控后续趋势，若持续恶化则需升级处理级别。
+
+[GRADE=P1 SCORE=85]

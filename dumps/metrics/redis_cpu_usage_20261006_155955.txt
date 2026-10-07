@@ -1,0 +1,6 @@
+%Cpu(s): 54.8 us,  7.1 sy,  0.0 ni, 14.3 id,  0.0 wa, 19.0 hi,  4.8 si,  0.0 st 
+%Cpu(s): 39.7 us,  3.0 sy,  0.0 ni, 37.0 id,  0.0 wa, 13.7 hi,  6.7 si,  0.0 st 
+%Cpu(s): 39.3 us,  2.6 sy,  0.0 ni, 38.9 id,  0.0 wa, 13.4 hi,  5.8 si,  0.0 st 
+%Cpu(s): 39.1 us,  2.6 sy,  0.0 ni, 39.5 id,  0.0 wa, 13.0 hi,  5.7 si,  0.0 st 
+%Cpu(s): 40.2 us,  2.7 sy,  0.0 ni, 36.6 id,  0.0 wa, 13.8 hi,  6.7 si,  0.0 st 
+%Cpu(s): 39.7 us,  2.7 sy,  0.0 ni, 35.1 id,  0.0 wa, 14.6 hi,  7.8 si,  0.0 st

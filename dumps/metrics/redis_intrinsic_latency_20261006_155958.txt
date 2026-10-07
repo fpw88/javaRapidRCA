@@ -1,0 +1,10 @@
+Max latency so far: 12 microseconds.
+Max latency so far: 13 microseconds.
+Max latency so far: 2600 microseconds.
+Max latency so far: 3544 microseconds.
+Max latency so far: 11182 microseconds.
+Max latency so far: 17588 microseconds.
+Max latency so far: 31660 microseconds.
+
+416698 total runs (avg latency: 71.9946 microseconds / 71994.59 nanoseconds per run).
+Worst run took 440x longer than the average latency.
